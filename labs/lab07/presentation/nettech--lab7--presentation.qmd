@@ -1,0 +1,219 @@
+---
+## Author
+author:
+  name: Бахи сиди али темассини
+  degrees: Student (3 курс)
+  orcid: ""
+  email: 1032234211@pfur.ru
+  affiliation:
+    - name: Российский университет дружбы народов
+      country: Российская Федерация
+      postal-code: 117198
+      city: Москва
+      address: ул. Миклухо-Маклая, д. 6
+## Title
+title: Лабораторная работа №7
+subtitle: "Дисциплина: Сетевые технологии"
+license: CC BY
+date: today
+date-format: "YYYY-MM-DD" # Example: 2025-09-06
+---
+
+## Цель работы
+
+- Настройка службы DHCP
+- Распределение адресов IPv4 и IPv6
+- Анализ DHCP-трафика
+
+
+## Топология и захват трафика (IPv4 DHCP)
+
+- Переименование устройств по шаблону
+- PC1-bahis, bahis-sw-01, bahis-gw-01
+- Включён захват трафика между коммутатором и маршрутизатором
+
+![Топология сети в GNS3 с переименованными устройствами и включённым захватом трафика](image/1.png)
+
+
+
+## Системные параметры VyOS и пользователи
+
+- Задано имя маршрутизатора
+- Настроено доменное имя
+- Создан пользователь bahis
+- Удалён пользователь vyos
+
+![Настройка системных параметров VyOS: имя хоста, домен и создание пользователя](image/2.png)
+![Повторный вход под новым пользователем и удаление учётной записи vyos](image/2-1.png)
+
+
+## Настройка DHCP-сервера (IPv4)
+
+- Создан shared-network `bahis`
+- DNS: `10.0.0.1`
+- Gateway: `10.0.0.1`
+- Диапазон: `10.0.0.2–10.0.0.253`
+
+![Конфигурация DHCP-сервера на маршрутизаторе VyOS для сети 10.0.0.0/24](image/4.png)
+
+
+
+## Статистика DHCP-сервера (до клиентов)
+
+- Всего адресов: 252
+- Активных аренд: 0
+- Все адреса доступны
+
+![Статистика DHCP-сервера и отсутствие активных аренд IP-адресов](image/5.png)
+
+
+## DHCP-процесс на узле PC1 (Request / ACK)
+
+- DHCP Request
+- DHCP ACK
+- Назначен IP `10.0.0.2/24`
+
+![Завершение процесса DHCP: DHCP Request и DHCP ACK на узле PC1](image/6-1.png)
+
+
+
+## Проверка IP и связности PC1
+
+- IP получен по DHCP
+- Gateway: `10.0.0.1`
+- Ping маршрутизатора успешен
+
+![Результаты команды show ip и проверка связности с маршрутизатором с помощью ping](image/7.png)
+
+
+
+## DHCP-статистика после выдачи адреса
+
+- Активных аренд: 1
+- IP: `10.0.0.2`
+- Клиент: PC1-bahis
+
+![Статистика DHCP-сервера и информация о выданной аренде на маршрутизаторе](image/8.png)
+
+
+
+## Журнал DHCP-сервера
+
+- DHCPDISCOVER
+- DHCPOFFER
+- DHCPREQUEST
+- DHCPACK
+- Обслуживание клиента PC1
+
+![Фрагмент журнала DHCP-сервера VyOS](image/9.png)
+
+
+
+## Анализ DHCP-трафика (IPv4)
+
+- Discover → Offer → Request → ACK
+- ARP и Gratuitous ARP
+- ICMP Echo
+
+![Захваченный трафик DHCP в Wireshark](image/10.png)
+![Детализация DHCP и ARP пакетов](image/10-1.png)
+
+
+
+## IPv6: топология и захват трафика
+
+- Использован Alpine Linux
+- Захват ICMPv6 и DHCPv6
+- Подсети IPv6
+
+![Топология сети IPv6 в GNS3](image/11.png)
+
+
+
+## Системные параметры VyOS (IPv6)
+
+- Имя устройства
+- Доменное имя
+- Пользователь bahis
+
+![Настройка имени хоста и пользователя VyOS](image/12.png)
+
+
+
+## Назначение IPv6-адресов интерфейсам
+
+- eth1: `2000::1/64`
+- eth2: `2001::1/64`
+
+![Назначение IPv6-адресов интерфейсам](image/13.png)
+
+
+
+## Stateless DHCPv6 + Router Advertisement
+
+- SLAAC
+- other-config-flag
+- DNS и домен по DHCPv6
+
+![Настройка Stateless DHCPv6 и RA](image/14-1.png)
+![Итоговая конфигурация DHCPv6](image/14-2.png)
+
+
+
+## Проверка IPv6 на PC2 (Stateless)
+
+- SLAAC-адрес
+- Link-local адрес
+- Ping успешен
+
+![IPv6-адресация PC2](image/15-1.png)
+![DHCPv6 без IAADDR](image/15-2.png)
+
+
+## Анализ IPv6-трафика (Stateless)
+
+- Router Solicitation
+- Router Advertisement
+- DHCPv6 Solicit / Reply
+
+![ICMPv6 и DHCPv6 Stateless](image/16.png)
+
+
+
+## Настройка Stateful DHCPv6
+
+- managed-flag
+- Диапазон: `2001::100–2001::199`
+- DNS и домен
+
+![Конфигурация Stateful DHCPv6](image/17.png)
+
+
+
+## Получение IPv6-адреса PC3
+
+- До запроса: только link-local
+- После udhcpc6: глобальный IPv6
+
+
+![Получение IPv6 по DHCPv6](image/18-2.png)
+
+
+
+## Проверка IPv6 PC3 после DHCPv6
+
+- Глобальный IPv6
+- Default route
+- DNS получен
+
+![IPv6 параметры PC3](image/19-1.png)
+
+
+## Анализ DHCPv6 Stateful-трафика
+
+- RA с managed-flag
+- Solicit → Advertise → Request → Reply
+- Адрес успешно выдан
+
+![DHCPv6 Stateful и ICMPv6](image/20.png)
+
